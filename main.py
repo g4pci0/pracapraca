@@ -6,7 +6,7 @@ if __name__ == '__main__':
 
     data_list = []
     data_dict = {}
-    results = []
+    group = {}
 
     file = open("data.txt", 'r')
 
@@ -32,3 +32,30 @@ if __name__ == '__main__':
 
     data_list.sort(key=lambda dct: datetime.strptime(dct["timestamp"], "%Y-%m-%d %H:00:00"))
 
+    for i, entry in enumerate(data_list):
+        date = entry["timestamp"]
+        if date not in group:
+            group[date] = {"flour": entry["flour"],
+                             "groat": entry["groat"],
+                             "milk": entry["milk"],
+                             "egg": entry["egg"]}
+        else:
+            group[date]["flour"] = str(int(entry["flour"]) + int(group[date]["flour"]))
+            group[date]["groat"] = str(int(entry["groat"]) + int(group[date]["groat"]))
+            group[date]["milk"] = str(int(entry["milk"]) + int(group[date]["milk"]))
+            group[date]["egg"] = str(int(entry["egg"]) + int(group[date]["egg"]))
+
+    results = []
+
+    for timestamp, value in group.items():
+        final_result = {
+            "timestamp": timestamp,
+            "flour": round(float(value["flour"]) * 0.01, 2),
+            "groat": round(float(value["groat"]) * 0.001, 2),
+            "milk": round(float(value["milk"]) * 0.001, 2),
+            "egg": int(value["egg"])
+        }
+        results.append(final_result)
+
+    for i in results:
+        print(i)

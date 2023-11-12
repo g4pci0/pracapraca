@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import pytz
+from dateutil.relativedelta import relativedelta
 
 def generate(period_start, period_end, data):
 
@@ -33,22 +34,34 @@ def generate(period_start, period_end, data):
     for period in periods:
         if time < period[0]:
             results.append([
-                time.astimezone(pytz.timezone("Europe/Warsaw")).isoformat(),
-                period[0].astimezone(pytz.timezone("Europe/Warsaw")).isoformat()
+                time.astimezone(pytz.timezone("Europe/Warsaw")).replace(day=1).isoformat(),
+                period[0].astimezone(pytz.timezone("Europe/Warsaw")).replace(day=1).isoformat()
             ])
 
         results.append([
-            period[0].astimezone(pytz.timezone("Europe/Warsaw")).isoformat(),
-            period[1].astimezone(pytz.timezone("Europe/Warsaw")).isoformat()
+            period[0].astimezone(pytz.timezone("Europe/Warsaw")).replace(day=1).isoformat(),
+            period[1].astimezone(pytz.timezone("Europe/Warsaw")).replace(day=1).isoformat()
         ])
 
         time = period[1]
 
     if time < period_end_dt:
         results.append([
-            time.astimezone(pytz.timezone("Europe/Warsaw")).isoformat(),
-            period_end_dt.astimezone(pytz.timezone("Europe/Warsaw")).isoformat()
+            time.astimezone(pytz.timezone("Europe/Warsaw")).replace(day=1).isoformat(),
+            period_end_dt.astimezone(pytz.timezone("Europe/Warsaw")).replace(day=1).isoformat(),
         ])
+
+    for result in results:
+        start = datetime.fromisoformat(result[0])
+        end = datetime.fromisoformat(result[1])
+
+        if start == end:
+            end = (end + relativedelta(months=1)).replace(tzinfo=start.tzinfo)
+            result[1] = end.isoformat()
+
+    # Usuwanie duplikatow za pomoca krotki i zbioru
+    results = list(set(tuple(result) for result in results))
+    results.sort(key=lambda dat: datetime.fromisoformat(dat[0]))
 
     for result in results:
         print(f"{result[0]} - {result[1]}")
@@ -67,7 +80,16 @@ if __name__ == '__main__':
         ["2022-09-29T18:00:00-04:00", "2023-04-20T01:00:00+03:00"],
         ["2022-08-11T00:00:00+02:00", "2022-08-30T05:00:00+07:00"]
     ]
+    """
+    period_start="2023-01-01T00:00:00+01:00"
+    period_end ="2023-05-01T00:00:00+02:00"
 
+    data = [
+        ["2023-01-01T00:00:00+01:00", "2023-02-01T00:00:00+01:00"],
+        ["2023-02-01T00:00:00+01:00", "2023-04-01T00:00:00+02:00"],
+        ["2023-04-01T00:00:00+02:00", "2023-05-01T00:00:00+02:00"]
+    ]
+    """
     # Posortuj wedlug daty
     data = sorted(data, key=lambda dat: dat[0])
 

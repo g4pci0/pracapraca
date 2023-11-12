@@ -1,6 +1,4 @@
-from datetime import datetime
-from datetime import timedelta
-import pytz
+from datetime import datetime, timedelta
 
 if __name__ == '__main__':
 
@@ -8,6 +6,7 @@ if __name__ == '__main__':
     data_dict = {}
     group = {}
 
+    # Wczytaj dane z pliku
     file = open("data.txt", 'r')
 
     for line in file:
@@ -22,6 +21,7 @@ if __name__ == '__main__':
 
         data_dict = {}
 
+    # Zamien dane na odpowiedni format datetime
     for i, entry in enumerate(data_list):
         for value in entry.values():
             timestamp = datetime.fromisoformat(str(value))
@@ -30,15 +30,17 @@ if __name__ == '__main__':
             data_list[i]["timestamp"] = date
             break
 
+    # Posortuj wedlug daty
     data_list.sort(key=lambda dct: datetime.strptime(dct["timestamp"], "%Y-%m-%d %H:00:00"))
 
+    # Grupuj wedlug daty
     for i, entry in enumerate(data_list):
         date = entry["timestamp"]
         if date not in group:
             group[date] = {"flour": entry["flour"],
-                             "groat": entry["groat"],
-                             "milk": entry["milk"],
-                             "egg": entry["egg"]}
+                           "groat": entry["groat"],
+                           "milk": entry["milk"],
+                           "egg": entry["egg"]}
         else:
             group[date]["flour"] = str(int(entry["flour"]) + int(group[date]["flour"]))
             group[date]["groat"] = str(int(entry["groat"]) + int(group[date]["groat"]))
@@ -47,12 +49,13 @@ if __name__ == '__main__':
 
     results = []
 
+    # Przelicz na podane jednostki
     for timestamp, value in group.items():
         final_result = {
             "timestamp": timestamp,
-            "flour": round(float(value["flour"]) * 0.01, 2),
-            "groat": round(float(value["groat"]) * 0.001, 2),
-            "milk": round(float(value["milk"]) * 0.001, 2),
+            "flour": round(float(value["flour"]) * 0.01, 2),    # dkg -> kg
+            "groat": round(float(value["groat"]) * 0.001, 2),   # g -> kg
+            "milk": round(float(value["milk"]) * 0.001, 2),     # ml -> l
             "egg": int(value["egg"])
         }
         results.append(final_result)

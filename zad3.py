@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 import pytz
 
-
 def generate(period_start, period_end, data):
 
     # Przeksztalc string na datetime
@@ -14,9 +13,10 @@ def generate(period_start, period_end, data):
         start = contract[0]
         end = contract[1]
 
+        # Ustaw poczatek i koniec
+        # Uzywamy funkcji min i max aby "zacisnac" wartosci miedzy przedzialami czasowymi
         start = datetime.fromisoformat(start)
         start_tz = max(period_start_dt, start)
-
 
         if end == "-":
             end = period_end
@@ -28,23 +28,37 @@ def generate(period_start, period_end, data):
             periods.append([start_tz, end_tz])
 
     results = []
+    time = period_start_dt
 
     for period in periods:
+        if time < period[0]:
+            results.append([
+                time.astimezone(pytz.timezone("Europe/Warsaw")).isoformat(),
+                period[0].astimezone(pytz.timezone("Europe/Warsaw")).isoformat()
+            ])
+
         results.append([
             period[0].astimezone(pytz.timezone("Europe/Warsaw")).isoformat(),
             period[1].astimezone(pytz.timezone("Europe/Warsaw")).isoformat()
         ])
 
-    print(results)
+        time = period[1]
 
+    if time < period_end_dt:
+        results.append([
+            time.astimezone(pytz.timezone("Europe/Warsaw")).isoformat(),
+            period_end_dt.astimezone(pytz.timezone("Europe/Warsaw")).isoformat()
+        ])
+
+    for result in results:
+        print(f"{result[0]} - {result[1]}")
 
 
 if __name__ == '__main__':
 
-    period_start = "2023-01-01T00:00:00+01:00"
-    period_end = "2023-05-01T00:00:00+02:00"
+    period_start = "2022-08-16T00:00:00+02:00"
+    period_end = "2023-05-30T00:00:00+02:00"
 
-    """
     data = [
         ["2023-04-20T01:00:00+03:00", "2023-05-06T04:30:00+06:30"],
         ["2022-05-23T15:00:00-07:00", "2022-07-11T19:00:00-03:00"],
@@ -53,20 +67,8 @@ if __name__ == '__main__':
         ["2022-09-29T18:00:00-04:00", "2023-04-20T01:00:00+03:00"],
         ["2022-08-11T00:00:00+02:00", "2022-08-30T05:00:00+07:00"]
     ]
-    """
-
-    data = [
-        ["2023-03-31T22:00:00+00:00", "-"],
-        ["2022-03-31T17:00:00-05:00", "2022-06-30T18:00:00-04:00"],
-        ["2022-06-30T12:00:00-10:00", "2023-01-31T19:30:00-03:30"]
-    ]
 
     # Posortuj wedlug daty
     data = sorted(data, key=lambda dat: dat[0])
-
-    #dt = datetime.fromisoformat("2023-03-31T22:00:00-00:00")
-    #dt = dt.astimezone(datetime.fromisoformat(period_start).tzinfo)
-    #dt = dt.replace(day=1, hour=0, minute=0, second=0)
-    #print(dt)
 
     generate(period_start, period_end, data)
